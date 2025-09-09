@@ -426,17 +426,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_app/controller/app_controller.dart';
-import 'services/supabase_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/login_screen.dart';
 import 'screens/singup_screen.dart';
 import 'screens/main_app.dart';
 import 'theme/app_theme.dart';
 
-void main() async {
-
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SupabaseService.initialize();
-  
+
+  await Supabase.initialize(
+    url: 'https://fviknrqqekcgqwzmksrq.supabase.co',  // ✅ Replace with your Project URL
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2aWtucnFxZWtjZ3F3em1rc3JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzODU1ODIsImV4cCI6MjA3MTk2MTU4Mn0.9jc7NKCg8m7l_wFC54nakXiGhfJPSGq-Ts2w33Ko2MY',                     // ✅ Replace with your Anon Key
+  );
   Get.put(AppController()); // inject AppController
   runApp(const MyApp());
 }
