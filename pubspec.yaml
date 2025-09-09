@@ -40,9 +40,14 @@ dependencies:
 
   # Supabase Flutter SDK with Google Sign-In
   supabase_flutter:
-  get: ^4.7.2
+
   google_sign_in: ^6.3.0
   http: ^1.4.0
+  go_router: ^16.2.1
+  flutter_screenutil: ^5.9.3
+  logger: ^2.6.1
+  shared_preferences: ^2.5.3
+  flutter_riverpod: ^2.6.1
 
 dev_dependencies:
   flutter_test:

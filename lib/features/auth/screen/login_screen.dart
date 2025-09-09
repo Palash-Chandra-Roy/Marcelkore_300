@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:my_app/controller/login_controller.dart';
-import 'debug_screen.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:my_app/features/auth/logic/login_controller.dart';
+import 'package:my_app/screens/home_screen.dart';
+import 'package:my_app/screens/singup_screen.dart';
+import '../../../screens/debug_screen.dart';
 class LoginScreen extends StatelessWidget {
-  final VoidCallback onNavigateToSignUp;
   const LoginScreen({
     super.key,
-    required this.onNavigateToSignUp, required void Function() onLogin,
   });
+  static const routeName = "/loginScreen" ;
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(LoginController());
     final screenWidth = MediaQuery.of(context).size.width;
+    GlobalKey formKey = GlobalKey() ;
+    TextEditingController _emailController = TextEditingController() ;
+    TextEditingController _passwordController = TextEditingController() ;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -25,7 +28,7 @@ class LoginScreen extends StatelessWidget {
               maxWidth: screenWidth < 600 ? double.infinity : 400,
             ),
             child: Form(
-              key: controller.formKey,
+              key: formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -60,7 +63,7 @@ class LoginScreen extends StatelessWidget {
                         color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                       )),
                   TextFormField(
-                    controller: controller.emailController,
+                    controller: _emailController,
                     decoration: _inputDecoration("Email"),
                     validator: (value) {
                       if (value == null || value.isEmpty) return "Enter your email";
@@ -77,7 +80,7 @@ class LoginScreen extends StatelessWidget {
                         color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                       )),
                   TextFormField(
-                    controller: controller.passwordController,
+                    controller: _passwordController,
                     obscureText: true,
                     decoration: _inputDecoration("Password"),
                     validator: (value) {
@@ -90,16 +93,50 @@ class LoginScreen extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   // Login Button
-                  Obx(() => ElevatedButton(
-                        onPressed: controller.isLoading.value
-                            ? null
-                            : controller.handleLogin,
-                        style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14)),
-                        child: controller.isLoading.value
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : const Text("Login"),
-                      )),
+            Consumer(
+              builder: (context, ref, _) {
+                final authState = ref.watch(authControllerProvider);
+                final isLoading = authState is AsyncLoading;
+
+                return ElevatedButton(
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                    await ref.read(authControllerProvider.notifier).login(
+                      email: _emailController.text.trim(),
+                      password: _passwordController.text.trim(),
+                    );
+
+                    // ✅ Navigate on success
+                    final latest = ref.read(authControllerProvider);
+                    if (latest is AsyncData) {
+                    context.push(HomeScreen.routeName) ;
+                    }
+
+                    // ❌ Show error
+                    if (latest is AsyncError) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("❌ ${latest.error}")),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: isLoading
+                      ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                      : const Text("Login"),
+                );
+              },
+            ),
+
 
                   const SizedBox(height: 24),
 
@@ -136,34 +173,26 @@ class LoginScreen extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   // Google Login
-                  Obx(() => OutlinedButton(
-                        onPressed: controller.isGoogleLoading.value
-                            ? null
-                            : controller.handleGoogleLogin,
+                  OutlinedButton(
+                        onPressed:  (){},
                         style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14)),
-                        child: controller.isGoogleLoading.value
-                            ? const CircularProgressIndicator()
-                            : const Text("Continue with Google"),
-                      )),
+                        child: const Text("Continue with Google"),
+                      ),
                   const SizedBox(height: 16),
 
                   // Apple Login
-                  Obx(() => OutlinedButton(
-                        onPressed: controller.isAppleLoading.value
-                            ? null
-                            : controller.handleAppleLogin,
+                    OutlinedButton(
+                        onPressed: (){},
                         style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14)),
-                        child: controller.isAppleLoading.value
-                            ? const CircularProgressIndicator()
-                            : const Text("Continue with Apple"),
-                      )),
+                        child:const Text("Continue with Apple"),
+                      ),
                   const SizedBox(height: 16),
 
                   // Forgot Password
                   TextButton(
-                    onPressed: controller.resetPassword,
+                    onPressed: (){},
                     child: const Text("Forgot password?"),
                   ),
                   const SizedBox(height: 10),
@@ -174,7 +203,7 @@ class LoginScreen extends StatelessWidget {
                     children: [
                       const Text("Don’t have an account? "),
                       TextButton(
-                        onPressed: onNavigateToSignUp,
+                        onPressed: (){context.push(SignUpScreen.routeName);},
                         child: const Text("Sign Up"),
                       ),
                     ],

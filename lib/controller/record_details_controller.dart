@@ -1,39 +1,39 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'dart:ui';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/record.dart';
 
-class RecordDetailsController extends GetxController {
-  final record = Rxn<Record>();
+class RecordDetailsController extends StateNotifier<Record?> {
+  RecordDetailsController() : super(null);
 
-  /// Optional callbacks
   Function(Record)? onEdit;
-  @override
-  //Function(String)? onDelete;
+  Function(String)? onDelete;
   VoidCallback? onBack;
 
-  /// Set the current record
   void setRecord(Record r) {
-    record.value = r;
+    state = r;
   }
 
-  /// Edit record (callback call)
   void editRecord() {
-    if (record.value != null && onEdit != null) {
-      onEdit!(record.value!);
+    if (state != null && onEdit != null) {
+      onEdit!(state!);
     }
   }
 
-  /// Delete record (callback call)
   void deleteRecord() {
-    if (record.value != null && onDelete != null) {
-      //onDelete!(record.value!.id);
+    if (state != null && onDelete != null) {
+      onDelete!(state!.id);
     }
   }
 
-  /// Navigate back
   void goBack() {
     if (onBack != null) {
       onBack!();
     }
   }
 }
+
+/// Provider
+final recordDetailsProvider =
+StateNotifierProvider<RecordDetailsController, Record?>(
+        (ref) => RecordDetailsController());
