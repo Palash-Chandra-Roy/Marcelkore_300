@@ -1,58 +1,88 @@
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/record.dart';
 import '../services/supabase_service.dart';
 
-class RecordsController extends GetxController {
-  var records = <Record>[].obs;
-  var isLoading = false.obs;
-  var error = "".obs;
+class RecordsState {
+  final List<Record> records;
+  final bool isLoading;
+  final String error;
+  final String searchQuery;
+  final RecordStatus? statusFilter;
 
-  var searchQuery = "".obs;
-  var statusFilter = Rxn<RecordStatus>();
+  const RecordsState({
+    this.records = const [],
+    this.isLoading = false,
+    this.error = "",
+    this.searchQuery = "",
+    this.statusFilter,
+  });
 
-  @override
-  void onInit() {
-    super.onInit();
+  RecordsState copyWith({
+    List<Record>? records,
+    bool? isLoading,
+    String? error,
+    String? searchQuery,
+    RecordStatus? statusFilter,
+  }) {
+    return RecordsState(
+      records: records ?? this.records,
+      isLoading: isLoading ?? this.isLoading,
+      error: error ?? this.error,
+      searchQuery: searchQuery ?? this.searchQuery,
+      statusFilter: statusFilter ?? this.statusFilter,
+    );
+  }
+}
+
+class RecordsController extends StateNotifier<RecordsState> {
+  RecordsController() : super(const RecordsState()) {
     loadRecords();
   }
 
   Future<void> loadRecords() async {
     try {
-      isLoading.value = true;
-      error.value = "";
-
+      state = state.copyWith(isLoading: true, error: "");
       final result = await SupabaseService.getRecords();
-      records.assignAll(result);
+      state = state.copyWith(records: result, isLoading: false);
     } catch (e) {
-      error.value = e.toString();
-    } finally {
-      isLoading.value = false;
+      state = state.copyWith(error: e.toString(), isLoading: false);
     }
   }
 
   Future<void> deleteRecord(String id) async {
     try {
       await SupabaseService.deleteRecord(id);
-      records.removeWhere((r) => r.id == id);
+      state = state.copyWith(
+        records: state.records.where((r) => r.id != id).toList(),
+      );
     } catch (e) {
-      Get.snackbar("Error", "Failed to delete record: $e");
+      state = state.copyWith(error: "Failed to delete record: $e");
     }
   }
 
-  List<Record> get filteredRecords {
-    return records.where((record) {
-      final matchesSearch = record.title.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
-          record.details.toLowerCase().contains(searchQuery.value.toLowerCase());
-      final matchesStatus = statusFilter.value == null || record.status == statusFilter.value;
-      return matchesSearch && matchesStatus;
-    }).toList();
-  }
-
   void setSearch(String query) {
-    searchQuery.value = query;
+    state = state.copyWith(searchQuery: query);
   }
 
   void setStatusFilter(RecordStatus? status) {
-    statusFilter.value = status;
+    state = state.copyWith(statusFilter: status);
+  }
+
+  List<Record> get filteredRecords {
+    return state.records.where((record) {
+      final matchesSearch =
+          record.title.toLowerCase().contains(state.searchQuery.toLowerCase()) ||
+              record.details
+                  .toLowerCase()
+                  .contains(state.searchQuery.toLowerCase());
+      final matchesStatus =
+          state.statusFilter == null || record.status == state.statusFilter;
+      return matchesSearch && matchesStatus;
+    }).toList();
   }
 }
+
+final recordsProvider =
+StateNotifierProvider<RecordsController, RecordsState>(
+      (ref) => RecordsController(),
+);

@@ -1,9 +1,24 @@
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/supabase_service.dart';
 
-class SettingsController extends GetxController {
-  var darkModeEnabled = false.obs;
-  var notificationsEnabled = true.obs;
+class SettingsState {
+  final bool darkModeEnabled;
+  final bool notificationsEnabled;
+
+  const SettingsState({
+    this.darkModeEnabled = false,
+    this.notificationsEnabled = true,
+  });
+
+  SettingsState copyWith({
+    bool? darkModeEnabled,
+    bool? notificationsEnabled,
+  }) {
+    return SettingsState(
+      darkModeEnabled: darkModeEnabled ?? this.darkModeEnabled,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+    );
+  }
 
   String get userName =>
       SupabaseService.currentUser?.userMetadata?['name'] ?? 'User';
@@ -17,21 +32,28 @@ class SettingsController extends GetxController {
     final date = DateTime.tryParse(createdAt);
     return date != null ? "${date.month}/${date.year}" : 'Unknown';
   }
+}
+
+class SettingsController extends StateNotifier<SettingsState> {
+  SettingsController() : super(const SettingsState());
 
   void toggleDarkMode(bool value) {
-    darkModeEnabled.value = value;
+    state = state.copyWith(darkModeEnabled: value);
     // TODO: save preference (local storage / supabase user metadata)
   }
 
   void toggleNotifications(bool value) {
-    notificationsEnabled.value = value;
+    state = state.copyWith(notificationsEnabled: value);
     // TODO: save preference (local storage / supabase user metadata)
   }
 
-  void logout() async {
+  Future<void> logout(WidgetRef ref) async {
     await SupabaseService.signOut();
-    Get.snackbar("Logout", "You have been logged out.");
-    // navigate back to login
-    Get.offAllNamed("/login");
+    // এখানে snackbar আর navigation riverpod context থেকে করতে হবে
   }
 }
+
+final settingsProvider =
+StateNotifierProvider<SettingsController, SettingsState>(
+      (ref) => SettingsController(),
+);

@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_app/controller/home_controller.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key, required void Function() onNavigateToRecords, required void Function() onCreateRecord});
+class HomeScreen extends ConsumerWidget {
+  const HomeScreen({super.key});
+  static const routeName = "/homeScreen";
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.put(HomeController());
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(homeProvider);
+    final controller = ref.read(homeProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -31,37 +33,35 @@ class HomeScreen extends StatelessWidget {
                   Text(
                     'A simple CRUD demo app with authentication',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).textTheme.bodySmall?.color,
-                        ),
+                      color: Theme.of(context).textTheme.bodySmall?.color,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],
               ),
             ),
 
-            // Quick Stats
-            Obx(
-              () => Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      'Total Records',
-                      controller.totalRecords.value.toString(),
-                      Icons.description,
-                    ),
+            // Quick Stats (Riverpod state ব্যবহার করছে)
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    context,
+                    'Total Records',
+                    state.totalRecords.toString(),
+                    Icons.description,
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      'Last Update',
-                      controller.lastUpdate.value,
-                      Icons.access_time,
-                    ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildStatCard(
+                    context,
+                    'Last Update',
+                    state.lastUpdate,
+                    Icons.access_time,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
 
             const SizedBox(height: 24),
@@ -81,9 +81,9 @@ class HomeScreen extends StatelessWidget {
                     Text(
                       'This app demonstrates basic CRUD operations with user authentication. Create, view, edit, and delete records to see it in action.',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color:
-                                Theme.of(context).textTheme.bodySmall?.color,
-                          ),
+                        color:
+                        Theme.of(context).textTheme.bodySmall?.color,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Column(
@@ -143,11 +143,11 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildStatCard(
-    BuildContext context,
-    String title,
-    String value,
-    IconData icon,
-  ) {
+      BuildContext context,
+      String title,
+      String value,
+      IconData icon,
+      ) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -162,8 +162,8 @@ class HomeScreen extends StatelessWidget {
             Text(
               value,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                fontWeight: FontWeight.w500,
+              ),
             ),
             const SizedBox(height: 4),
             Text(

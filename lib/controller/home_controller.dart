@@ -1,18 +1,33 @@
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class HomeController extends GetxController {
-  var totalRecords = 12.obs;
-  var lastUpdate = "2h".obs;
+// State Model
+class HomeState {
+  final int totalRecords;
+  final String lastUpdate;
 
-  // Navigation Callbacks
+  HomeState({required this.totalRecords, required this.lastUpdate});
+
+  HomeState copyWith({int? totalRecords, String? lastUpdate}) {
+    return HomeState(
+      totalRecords: totalRecords ?? this.totalRecords,
+      lastUpdate: lastUpdate ?? this.lastUpdate,
+    );
+  }
+}
+
+// StateNotifier for Home
+class HomeController extends StateNotifier<HomeState> {
+  HomeController() : super(HomeState(totalRecords: 12, lastUpdate: "2h"));
+
   void onCreateRecord() {
-    // Example navigation: Get.toNamed("/create");
     print("Navigate to Create Record");
   }
 
   void onNavigateToRecords() {
-    // Example navigation: Get.toNamed("/records");
     print("Navigate to Records");
   }
 }
- 
+
+// Provider
+final homeProvider =
+StateNotifierProvider<HomeController, HomeState>((ref) => HomeController());
