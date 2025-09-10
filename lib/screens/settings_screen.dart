@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controller/settings_controller.dart';
 
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key, required bool Function() onLogout});
+class SettingsScreen extends ConsumerWidget {
+  const SettingsScreen({super.key,});
+  
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.put(SettingsController());
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(settingsProvider);
+    final controller = ref.read(settingsProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Settings")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -37,17 +38,17 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 16),
                     Expanded(
-                      child: Obx(() => Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(controller.userName,
-                                  style: Theme.of(context).textTheme.titleMedium),
-                              Text(controller.userEmail,
-                                  style: Theme.of(context).textTheme.bodyMedium),
-                              Text("Member since ${controller.memberSince}",
-                                  style: Theme.of(context).textTheme.bodySmall),
-                            ],
-                          )),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(state.userName,
+                              style: Theme.of(context).textTheme.titleMedium),
+                          Text(state.userEmail,
+                              style: Theme.of(context).textTheme.bodyMedium),
+                          Text("Member since ${state.memberSince}",
+                              style: Theme.of(context).textTheme.bodySmall),
+                        ],
+                      ),
                     )
                   ],
                 ),
@@ -59,26 +60,26 @@ class SettingsScreen extends StatelessWidget {
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Obx(() => Row(
-                      children: [
-                        const Icon(Icons.dark_mode_outlined),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text("Dark Mode"),
-                              Text("Toggle theme appearance",
-                                  style: TextStyle(fontSize: 12)),
-                            ],
-                          ),
-                        ),
-                        Switch(
-                          value: controller.darkModeEnabled.value,
-                          onChanged: controller.toggleDarkMode,
-                        ),
-                      ],
-                    )),
+                child: Row(
+                  children: [
+                    const Icon(Icons.dark_mode_outlined),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text("Dark Mode"),
+                          Text("Toggle theme appearance",
+                              style: TextStyle(fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: state.darkModeEnabled,
+                      onChanged: controller.toggleDarkMode,
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 8),
@@ -87,26 +88,26 @@ class SettingsScreen extends StatelessWidget {
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Obx(() => Row(
-                      children: [
-                        const Icon(Icons.notifications_outlined),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text("Notifications"),
-                              Text("Receive app notifications",
-                                  style: TextStyle(fontSize: 12)),
-                            ],
-                          ),
-                        ),
-                        Switch(
-                          value: controller.notificationsEnabled.value,
-                          onChanged: controller.toggleNotifications,
-                        ),
-                      ],
-                    )),
+                child: Row(
+                  children: [
+                    const Icon(Icons.notifications_outlined),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text("Notifications"),
+                          Text("Receive app notifications",
+                              style: TextStyle(fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: state.notificationsEnabled,
+                      onChanged: controller.toggleNotifications,
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -134,7 +135,7 @@ class SettingsScreen extends StatelessWidget {
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
-                onPressed: controller.logout,
+                onPressed: (){},
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.error,
                   foregroundColor: Theme.of(context).colorScheme.onError,

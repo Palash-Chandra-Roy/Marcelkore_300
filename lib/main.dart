@@ -424,21 +424,28 @@
 
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:my_app/controller/app_controller.dart';
-import 'services/supabase_service.dart';
-import 'screens/login_screen.dart';
-import 'screens/singup_screen.dart';
-import 'screens/main_app.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import 'package:my_app/router/app_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'theme/app_theme.dart';
 
-void main() async {
-
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SupabaseService.initialize();
-  
-  Get.put(AppController()); // inject AppController
-  runApp(const MyApp());
+  await Supabase.initialize(
+    url: 'https://fviknrqqekcgqwzmksrq.supabase.co',  // ✅ Replace with your Project URL
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2aWtucnFxZWtjZ3F3em1rc3JxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzODU1ODIsImV4cCI6MjA3MTk2MTU4Mn0.9jc7NKCg8m7l_wFC54nakXiGhfJPSGq-Ts2w33Ko2MY',                     // ✅ Replace with your Anon Key
+  );
+  runApp(const ProviderScope(
+    child: ScreenUtilInit(
+      designSize: Size(393, 852),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      child: MyApp(),
+    ),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -446,24 +453,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = Get.find<AppController>();
-    return Obx(() => GetMaterialApp(
+    return MaterialApp.router(
           title: 'My App',
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: ThemeMode.system,
           debugShowCheckedModeBanner: false,
-          home: c.isAuthenticated.value
-              ? const MainApp()
-              : c.currentScreen.value == Screen.signup
-                  ? SignUpScreen(
-                      onSignUp: c.handleSignUp,
-                      onNavigateToLogin: () => c.currentScreen.value = Screen.login,
-                    )
-                  : LoginScreen(
-                      onLogin: c.handleLogin,
-                      onNavigateToSignUp: () => c.currentScreen.value = Screen.signup,
-                    ),
-        ));
+          routerConfig: AppRouter.appRouter,
+        );
   }
 }

@@ -1,18 +1,36 @@
-import 'package:get/get.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:my_app/features/record/screen/record_form_screen.dart';
 
-class HomeController extends GetxController {
-  var totalRecords = 12.obs;
-  var lastUpdate = "2h".obs;
+// State Model
+class HomeState {
+  final int totalRecords;
+  final String lastUpdate;
 
-  // Navigation Callbacks
-  void onCreateRecord() {
-    // Example navigation: Get.toNamed("/create");
-    print("Navigate to Create Record");
+  HomeState({required this.totalRecords, required this.lastUpdate});
+
+  HomeState copyWith({int? totalRecords, String? lastUpdate}) {
+    return HomeState(
+      totalRecords: totalRecords ?? this.totalRecords,
+      lastUpdate: lastUpdate ?? this.lastUpdate,
+    );
+  }
+}
+
+// StateNotifier for Home
+class HomeController extends StateNotifier<HomeState> {
+  HomeController() : super(HomeState(totalRecords: 12, lastUpdate: "2h"));
+
+static  void onCreateRecord(BuildContext context) {
+    context.push(RecordFormScreen.routeName);
   }
 
-  void onNavigateToRecords() {
-    // Example navigation: Get.toNamed("/records");
+ static void onNavigateToRecords() {
     print("Navigate to Records");
   }
 }
- 
+
+// Provider
+final homeProvider =
+StateNotifierProvider<HomeController, HomeState>((ref) => HomeController());
