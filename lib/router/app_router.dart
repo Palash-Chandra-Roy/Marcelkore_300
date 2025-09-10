@@ -4,6 +4,7 @@ import 'package:my_app/features/auth/screen/login_screen.dart';
 import 'package:my_app/screens/home_screen.dart';
 import 'package:my_app/screens/main_app.dart';
 import 'package:my_app/features/record/screen/record_form_screen.dart';
+import 'package:my_app/screens/settings_screen.dart';
 import 'package:my_app/screens/singup_screen.dart';
 import 'package:my_app/widgets/global_snackbar.dart';
 import 'error_screen.dart';
@@ -46,6 +47,12 @@ class AppRouter {
           path: RecordFormScreen.routeName,
           name: RecordFormScreen.routeName,
           builder: (context, state) => const RecordFormScreen(),
+        ),
+
+        GoRoute(
+          path: SettingsScreen.routeName,
+          name: SettingsScreen.routeName,
+          builder: (context, state) => const SettingsScreen(),
         ),
       ]);
 }

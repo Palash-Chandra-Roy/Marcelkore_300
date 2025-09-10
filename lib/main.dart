@@ -430,6 +430,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:my_app/router/app_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'controller/settings_controller.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -447,19 +448,22 @@ Future<void> main() async {
     ),
   ));
 }
-
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider);
+
     return MaterialApp.router(
-          title: 'My App',
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: ThemeMode.system,
-          debugShowCheckedModeBanner: false,
-          routerConfig: AppRouter.appRouter,
-        );
+      title: 'My App',
+      debugShowCheckedModeBanner: false,
+      routerConfig: AppRouter.appRouter,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: settings.darkModeEnabled
+          ? ThemeMode.dark
+          : ThemeMode.light,
+    );
   }
 }

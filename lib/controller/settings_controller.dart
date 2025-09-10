@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+final supabase = Supabase.instance.client;
+
 class SettingsState {
   final bool darkModeEnabled;
   final bool notificationsEnabled;
@@ -40,11 +42,12 @@ class SettingsController extends StateNotifier<SettingsState> {
 
   /// Load user info from Supabase
   void _loadUserData() {
-    final user = Supabase.instance.client.auth.currentUser;
+    final user = supabase.auth.currentUser;
 
     if (user != null) {
       final createdAt = user.createdAt;
       String memberSince = "Unknown";
+
       if (createdAt != null) {
         final parsed = DateTime.tryParse(createdAt);
         if (parsed != null) {
@@ -60,25 +63,26 @@ class SettingsController extends StateNotifier<SettingsState> {
     }
   }
 
-  /// Toggle Dark Mode
+  /// ✅ Toggle Dark Mode / Light Mode
   void toggleDarkMode(bool value) {
     state = state.copyWith(darkModeEnabled: value);
-    // TODO: save preference (local storage / supabase metadata)
+    // চাইলে local storage এ save করতে পারেন
   }
 
-  /// Toggle Notifications
+  /// ✅ Toggle Notifications
   void toggleNotifications(bool value) {
     state = state.copyWith(notificationsEnabled: value);
-    // TODO: save preference (local storage / supabase metadata)
+    // চাইলে local storage এ save করতে পারেন
   }
 
-  /// Logout
-  Future<void> logout() async {
-    await Supabase.instance.client.auth.signOut();
-    // TODO: এখানে navigation/snackbar UI থেকে call করবে
+  /// ✅ Logout with Supabase + Redirect
+  Future<void> signOut(context) async {
+    await supabase.auth.signOut();
+
   }
 }
 
+/// Riverpod Provider
 final settingsProvider =
 StateNotifierProvider<SettingsController, SettingsState>(
       (ref) => SettingsController(),

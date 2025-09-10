@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:my_app/features/auth/screen/login_screen.dart';
 import '../controller/settings_controller.dart';
 
 class SettingsScreen extends ConsumerWidget {
-  const SettingsScreen({super.key,});
-  
+  const SettingsScreen({super.key});
+
+  static const routeName = "/settingsScreen";
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,13 +30,22 @@ class SettingsScreen extends ConsumerWidget {
                       width: 64,
                       height: 64,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+                        color: Theme
+                            .of(context)
+                            .colorScheme
+                            .secondary
+                            .withOpacity(0.1),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         Icons.person,
                         size: 32,
-                        color: Theme.of(context).colorScheme.onSecondary,
+                        color: Colors.blue,
+
+                        // Theme
+                        //     .of(context)
+                        //     .colorScheme
+                        //     .secondary,
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -42,11 +54,20 @@ class SettingsScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(state.userName,
-                              style: Theme.of(context).textTheme.titleMedium),
+                              style: Theme
+                                  .of(context)
+                                  .textTheme
+                                  .titleMedium),
                           Text(state.userEmail,
-                              style: Theme.of(context).textTheme.bodyMedium),
+                              style: Theme
+                                  .of(context)
+                                  .textTheme
+                                  .bodyMedium),
                           Text("Member since ${state.memberSince}",
-                              style: Theme.of(context).textTheme.bodySmall),
+                              style: Theme
+                                  .of(context)
+                                  .textTheme
+                                  .bodySmall),
                         ],
                       ),
                     )
@@ -67,7 +88,7 @@ class SettingsScreen extends ConsumerWidget {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children:  [
                           Text("Dark Mode"),
                           Text("Toggle theme appearance",
                               style: TextStyle(fontSize: 12)),
@@ -83,7 +104,6 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 8),
-
             // Notifications
             Card(
               child: Padding(
@@ -111,7 +131,6 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-
             // About
             Card(
               child: Padding(
@@ -119,7 +138,8 @@ class SettingsScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
-                    Text("About", style: TextStyle(fontWeight: FontWeight.w500)),
+                    Text(
+                        "About", style: TextStyle(fontWeight: FontWeight.w500)),
                     SizedBox(height: 12),
                     _AboutRow(label: "Version", value: "1.0.0"),
                     _AboutRow(label: "Build", value: "2024.12.30"),
@@ -130,15 +150,63 @@ class SettingsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
 
-            // Logout Button
+            // 🔹 Logout Button
+
+
             SizedBox(
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
-                onPressed: (){},
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        title: const Text("Confirm Logout"),
+                        content: const Text("Are you sure you want to logout?"),
+                        actions: [
+                          // ❌ Cancel Button
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            // শুধু popup বন্ধ করবে
+                            child: const Text("Cancel"),
+                          ),
+
+                          // ✅ Logout Button
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                            ),
+                            onPressed: () async {
+                              Navigator.pop(context); // dialog close
+                              await controller.signOut(
+                                  context); // Supabase থেকে logout
+
+                              if (context.mounted) {
+                                // context.push এর বদলে go ব্যবহার করুন
+                                context.go(LoginScreen.routeName);
+                              }
+                            },
+                            child: const Text("Logout"),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error,
-                  foregroundColor: Theme.of(context).colorScheme.onError,
+                  backgroundColor: Theme
+                      .of(context)
+                      .colorScheme
+                      .error,
+                  foregroundColor: Theme
+                      .of(context)
+                      .colorScheme
+                      .onError,
                 ),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -149,15 +217,21 @@ class SettingsScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-            ),
+            )
+
+
           ],
         ),
       ),
+
+
     );
   }
+
 }
 
-class _AboutRow extends StatelessWidget {
+
+  class _AboutRow extends StatelessWidget {
   final String label;
   final String value;
   const _AboutRow({required this.label, required this.value});
@@ -172,10 +246,14 @@ class _AboutRow extends StatelessWidget {
           Text(label,
               style: TextStyle(
                   fontSize: 14,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withOpacity(0.6))),
           Text(value,
               style: TextStyle(
-                  fontSize: 14, color: Theme.of(context).colorScheme.onSurface)),
+                  fontSize: 14,
+                  color: Theme.of(context).colorScheme.onSurface)),
         ],
       ),
     );

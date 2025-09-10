@@ -11,7 +11,7 @@ class SignUpScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(signUpProvider);
     final controller = ref.read(signUpProvider.notifier);
-
+                                                               
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,

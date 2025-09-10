@@ -20,7 +20,7 @@ class HomeState {
 
 // StateNotifier for Home
 class HomeController extends StateNotifier<HomeState> {
-  HomeController() : super(HomeState(totalRecords: 12, lastUpdate: "2h"));
+  HomeController() : super(HomeState(totalRecords: 10, lastUpdate: "2h"));
 
 static  void onCreateRecord(BuildContext context) {
     context.push(RecordFormScreen.routeName);

@@ -88,7 +88,7 @@ class HomeScreen extends ConsumerWidget {
                         SizedBox(
                           width: double.infinity,
                           height: 48,
-                          child: ElevatedButton(
+                          child: OutlinedButton(
                             onPressed:(){ HomeController.onCreateRecord(context);},
                             child: const Text('Create Your First Record'),
                           ),
