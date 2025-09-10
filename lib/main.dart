@@ -2,7 +2,7 @@
 // import 'package:my_app/screens/singup_screen.dart';
 // import 'screens/login_screen.dart';
 // import 'screens/main_app.dart';
-// import 'models/record.dart';
+// import 'models/record_all_model.dart';
 // import 'theme/app_theme.dart';
 // import 'utils/snackbar_utils.dart';
 
@@ -259,7 +259,7 @@
 // import 'package:my_app/screens/singup_screen.dart';
 // import 'screens/login_screen.dart';
 // import 'screens/main_app.dart';
-// import 'models/record.dart';
+// import 'models/record_all_model.dart';
 // import 'theme/app_theme.dart';
 // import 'utils/snackbar_utils.dart';
 // import 'services/supabase_service.dart';

@@ -1,6 +1,6 @@
 // import 'package:supabase_flutter/supabase_flutter.dart';
 // import 'package:google_sign_in/google_sign_in.dart';
-// import '../models/record.dart';
+// import '../models/record_all_model.dart';
 
 // /// Supabase Service for database operations
 // /// 
@@ -572,7 +572,7 @@
 /////
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../models/record.dart';
+import '../models/record_all_model.dart';
 
 class SupabaseService {
   static const String SUPABASE_URL = 'https://fviknrqqekcgqwzmksrq.supabase.co';
@@ -676,7 +676,7 @@ static Future<Record> updateRecord(Record record) async {
         'value': record.value,
         'updated_at': DateTime.now().toIso8601String(),
       })
-      .eq('id', record.id)
+      .eq('id', record.id as Object)
       .eq('user_id', currentUser!.id)
       .select()
       .single();
@@ -720,5 +720,3 @@ static Future<Record> updateRecord(Record record) async {
 }
 
 }
-
-

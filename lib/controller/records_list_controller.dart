@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/record.dart';
+import '../models/record_all_model.dart';
 import '../services/supabase_service.dart';
 
 class RecordsState {

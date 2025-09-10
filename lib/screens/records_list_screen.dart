@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/record.dart';
+import '../models/record_all_model.dart';
 import '../controller/records_list_controller.dart';
 
 class RecordsListScreen extends ConsumerWidget {
@@ -161,7 +161,7 @@ class RecordsListScreen extends ConsumerWidget {
                               final confirm = await _showDeleteDialog(
                                   context, record.title);
                               if (confirm) {
-                                await controller.deleteRecord(record.id);
+                                await controller.deleteRecord(record.id!);
                                 ;
                               }
                             },

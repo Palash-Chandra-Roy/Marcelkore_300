@@ -9,7 +9,7 @@ import 'package:my_app/screens/singup_screen.dart';
 import 'package:my_app/widgets/global_snackbar.dart';
 import 'error_screen.dart';
 class AppRouter {
-  static const String initial = LoginScreen.routeName;
+  static const String initial = MainApp.routeName;
   static final GoRouter appRouter = GoRouter(
       initialLocation:initial,
       errorBuilder: (context, state) {
@@ -44,9 +44,12 @@ class AppRouter {
           name: MainApp.routeName,
           builder: (context, state) => const MainApp(),
         ),GoRoute(
-          path: RecordFormScreen.routeName,
+          path: "${RecordFormScreen.routeName}",   // 👈 :id dynamic parameter
           name: RecordFormScreen.routeName,
-          builder: (context, state) => const RecordFormScreen(),
+          builder: (context, state) {
+            final String? id = state.extra as String?;   // 👈 এখানে id nullable
+            return RecordFormScreen(isId: id);
+          },
         ),
 
         GoRoute(

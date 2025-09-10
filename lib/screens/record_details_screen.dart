@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_app/controller/record_details_controller.dart';
-import 'package:my_app/models/record.dart';
+import 'package:my_app/models/record_all_model.dart';
 
 class RecordDetailsScreen extends ConsumerWidget {
   const RecordDetailsScreen({

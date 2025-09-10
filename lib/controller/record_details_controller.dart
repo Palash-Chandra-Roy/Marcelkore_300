@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/record.dart';
+import '../models/record_all_model.dart';
 
 class RecordDetailsController extends StateNotifier<Record?> {
   RecordDetailsController() : super(null);
@@ -22,7 +22,7 @@ class RecordDetailsController extends StateNotifier<Record?> {
 
   void deleteRecord() {
     if (state != null && onDelete != null) {
-      onDelete!(state!.id);
+      onDelete!(state!.id!);
     }
   }
 
