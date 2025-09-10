@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:my_app/features/auth/logic/login_controller.dart';
 import 'package:my_app/screens/home_screen.dart';
 import 'package:my_app/screens/singup_screen.dart';
+import 'package:my_app/widgets/global_snackbar.dart';
 import '../../../screens/debug_screen.dart';
 class LoginScreen extends StatelessWidget {
   const LoginScreen({
@@ -102,22 +103,41 @@ class LoginScreen extends StatelessWidget {
                   onPressed: isLoading
                       ? null
                       : () async {
+                    // 🔹 Call login from controller
                     await ref.read(authControllerProvider.notifier).login(
                       email: _emailController.text.trim(),
                       password: _passwordController.text.trim(),
                     );
 
-                    // ✅ Navigate on success
+                    // 🔹 Check latest state
                     final latest = ref.read(authControllerProvider);
+
+                    // ✅ Navigate on success
                     if (latest is AsyncData) {
-                    context.push(HomeScreen.routeName) ;
+                      if (context.mounted) {
+                        context.go(HomeScreen.routeName);
+                      }
                     }
 
                     // ❌ Show error
                     if (latest is AsyncError) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("❌ ${latest.error}")),
-                      );
+                      final errorMsg = latest.error.toString();
+
+                      if (errorMsg.contains("Email not confirmed")) {
+                        GlobalSnackBar.show(
+                          context,
+                          title: "Please Verify",
+                          message: "⚠️ Confirm your email before login.",
+                          type: CustomSnackType.error,
+                        );
+                      } else {
+                        GlobalSnackBar.show(
+                          context,
+                          title: "Login Failed",
+                          message: "❌ $errorMsg",
+                          type: CustomSnackType.error,
+                        );
+                      }
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -134,6 +154,7 @@ class LoginScreen extends StatelessWidget {
                   )
                       : const Text("Login"),
                 );
+
               },
             ),
 
