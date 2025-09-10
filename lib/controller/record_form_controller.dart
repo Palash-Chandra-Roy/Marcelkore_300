@@ -59,13 +59,17 @@ class RecordFormController extends StateNotifier<RecordFormState> {
         title: titleController.text.trim(),
         details: detailsController.text.trim(),
         status: state.selectedStatus,
-        value: double.parse(valueController.text),
+        value: double.tryParse(valueController.text.trim()) ?? 0.0,
         updatedAt: DateTime.now(),
       );
 
       final saved = editingRecord != null
           ? await SupabaseService.updateRecord(record)
           : await SupabaseService.createRecord(record);
+
+      if (saved == null) {
+        throw Exception("Supabase returned null when saving record");
+      }
 
       return saved;
     } catch (e) {

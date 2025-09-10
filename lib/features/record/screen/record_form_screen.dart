@@ -1,35 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/record.dart';
-import '../controller/record_form_controller.dart';
+import 'package:my_app/models/record.dart';
+import '../../../controller/record_form_controller.dart';
 
 class RecordFormScreen extends ConsumerWidget {
-  final Record? record;
-  final Function(Record) onSave;
-  final VoidCallback onCancel;
-
-  const RecordFormScreen({
-    super.key,
-    this.record,
-    required this.onSave,
-    required this.onCancel,
-  });
+  const RecordFormScreen({super.key});
+  static const routeName = "/recordFormScreen";
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(recordFormProvider.notifier);
     final state = ref.watch(recordFormProvider);
 
-    controller.setRecord(record);
-
-    final isEditing = record != null;
+    final isEditing = controller.editingRecord != null;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(isEditing ? 'Edit Record' : 'Create Record'),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: onCancel,
+          onPressed: () => Navigator.pop(context), // cancel → back
         ),
         actions: [
           TextButton(
@@ -37,8 +27,8 @@ class RecordFormScreen extends ConsumerWidget {
                 ? null
                 : () async {
               final saved = await controller.saveRecord(context);
-              if (saved != null) {
-                onSave(saved);
+              if (saved != null && context.mounted) {
+                Navigator.pop(context, saved); // return saved record
               }
             },
             child: state.isLoading
@@ -96,12 +86,10 @@ class RecordFormScreen extends ConsumerWidget {
               // Status
               Text('Status', style: Theme.of(context).textTheme.labelLarge),
               const SizedBox(height: 8),
-              DropdownButtonFormField<RecordStatus>(
+              DropdownButtonFormField(
                 value: state.selectedStatus,
                 onChanged: (newValue) {
-                  if (newValue != null) {
-                    controller.setStatus(newValue);
-                  }
+                  if (newValue != null) controller.setStatus(newValue);
                 },
                 items: RecordStatus.values
                     .map((status) => DropdownMenuItem(
@@ -148,8 +136,8 @@ class RecordFormScreen extends ConsumerWidget {
                       ? null
                       : () async {
                     final saved = await controller.saveRecord(context);
-                    if (saved != null) {
-                      onSave(saved);
+                    if (saved != null && context.mounted) {
+                      Navigator.pop(context, saved);
                     }
                   },
                   child: state.isLoading
@@ -162,7 +150,7 @@ class RecordFormScreen extends ConsumerWidget {
                 width: double.infinity,
                 height: 48,
                 child: OutlinedButton(
-                  onPressed: onCancel,
+                  onPressed: () => Navigator.pop(context), // cancel → back
                   child: const Text('Cancel'),
                 ),
               ),

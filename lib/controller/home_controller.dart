@@ -1,4 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:my_app/features/record/screen/record_form_screen.dart';
 
 // State Model
 class HomeState {
@@ -19,11 +22,11 @@ class HomeState {
 class HomeController extends StateNotifier<HomeState> {
   HomeController() : super(HomeState(totalRecords: 12, lastUpdate: "2h"));
 
-  void onCreateRecord() {
-    print("Navigate to Create Record");
+static  void onCreateRecord(BuildContext context) {
+    context.push(RecordFormScreen.routeName);
   }
 
-  void onNavigateToRecords() {
+ static void onNavigateToRecords() {
     print("Navigate to Records");
   }
 }

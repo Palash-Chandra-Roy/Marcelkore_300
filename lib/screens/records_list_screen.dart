@@ -4,15 +4,11 @@ import '../models/record.dart';
 import '../controller/records_list_controller.dart';
 
 class RecordsListScreen extends ConsumerWidget {
-  final Function(Record) onEditRecord;
-  final Function(String) onDeleteRecord;
-  final Function(Record) onViewRecord;
+
 
   const RecordsListScreen({
     super.key,
-    required this.onEditRecord,
-    required this.onDeleteRecord,
-    required this.onViewRecord,
+   
   });
 
   @override
@@ -121,7 +117,7 @@ class RecordsListScreen extends ConsumerWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        onTap: () => onViewRecord(record),
+        onTap: (){},
         borderRadius: BorderRadius.circular(10),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -157,7 +153,7 @@ class RecordsListScreen extends ConsumerWidget {
                         children: [
                           IconButton(
                             icon: const Icon(Icons.edit, size: 18),
-                            onPressed: () => onEditRecord(record),
+                            onPressed: (){},
                           ),
                           IconButton(
                             icon: const Icon(Icons.delete, size: 18),
@@ -166,7 +162,7 @@ class RecordsListScreen extends ConsumerWidget {
                                   context, record.title);
                               if (confirm) {
                                 await controller.deleteRecord(record.id);
-                                onDeleteRecord(record.id);
+                                ;
                               }
                             },
                           ),

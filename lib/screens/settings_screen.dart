@@ -3,9 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controller/settings_controller.dart';
 
 class SettingsScreen extends ConsumerWidget {
-  const SettingsScreen({super.key, required this.onLogout});
-
-  final VoidCallback onLogout;
+  const SettingsScreen({super.key,});
+  
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -13,7 +12,6 @@ class SettingsScreen extends ConsumerWidget {
     final controller = ref.read(settingsProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Settings")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -137,7 +135,7 @@ class SettingsScreen extends ConsumerWidget {
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
-                onPressed: onLogout,
+                onPressed: (){},
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.error,
                   foregroundColor: Theme.of(context).colorScheme.onError,

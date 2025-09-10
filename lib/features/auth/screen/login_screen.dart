@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_app/features/auth/logic/login_controller.dart';
 import 'package:my_app/screens/home_screen.dart';
+import 'package:my_app/screens/main_app.dart';
 import 'package:my_app/screens/singup_screen.dart';
 import 'package:my_app/widgets/global_snackbar.dart';
 import '../../../screens/debug_screen.dart';
@@ -115,7 +116,7 @@ class LoginScreen extends StatelessWidget {
                     // ✅ Navigate on success
                     if (latest is AsyncData) {
                       if (context.mounted) {
-                        context.go(HomeScreen.routeName);
+                        context.go(MainApp.routeName);
                       }
                     }
 
@@ -230,44 +231,8 @@ class LoginScreen extends StatelessWidget {
                     ],
                   ),
 
-                  const SizedBox(height: 32),
-
-                  // Footer
-                  Column(
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const DebugScreen()),
-                          );
-                        },
-                        child: Text(
-                          'Debug Connection',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withOpacity(0.7),
-                          ),
-                        ),
-                      ),
-                      Text(
-                        'Demo app with Supabase backend',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withOpacity(0.6),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                    ],
-                  ),
+                 
+                
                 ],
               ),
             ),

@@ -12,9 +12,6 @@ class HomeScreen extends ConsumerWidget {
     final controller = ref.read(homeProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Home"),
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -92,7 +89,7 @@ class HomeScreen extends ConsumerWidget {
                           width: double.infinity,
                           height: 48,
                           child: ElevatedButton(
-                            onPressed: controller.onCreateRecord,
+                            onPressed:(){ HomeController.onCreateRecord(context);},
                             child: const Text('Create Your First Record'),
                           ),
                         ),
@@ -101,7 +98,7 @@ class HomeScreen extends ConsumerWidget {
                           width: double.infinity,
                           height: 48,
                           child: OutlinedButton(
-                            onPressed: controller.onNavigateToRecords,
+                            onPressed:(){ HomeController.onNavigateToRecords();},
                             child: const Text('View All Records'),
                           ),
                         ),
