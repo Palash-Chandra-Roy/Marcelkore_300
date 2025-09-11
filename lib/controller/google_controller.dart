@@ -1,62 +1,62 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:logger/logger.dart';
 
-/// Google Sign-In Notifier (Riverpod)
-class GoogleSignInNotifier extends StateNotifier<AsyncValue<void>> {
-  GoogleSignInNotifier() : super(const AsyncData(null));
+final _logger = Logger();
+
+class GoogleAuthController extends StateNotifier<AsyncValue<void>> {
+  GoogleAuthController() : super(const AsyncData(null));
 
   final SupabaseClient supabase = Supabase.instance.client;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email'],
-    // clientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com', // iOS only
-    serverClientId:
-    '449392146096-qk9u3dee956p6sreg1d99b3hnclrns1t.apps.googleusercontent.com',
-  );
-
-  /// 🔹 Sign in with Google and authenticate with Supabase
   Future<void> signInWithGoogle() async {
     state = const AsyncLoading();
+
     try {
-      // Step 1: Google Sign-In
+      _logger.i("🔹 Starting Google Sign-In...");
+
+      // Step 1: Google popup
       final googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        state = AsyncError("Google sign-in cancelled", StackTrace.current);
+        _logger.w("⚠️ Google Sign-In cancelled by user");
+        state = const AsyncError("Cancelled by user", StackTrace.empty);
         return;
       }
+      _logger.i("✅ Google user: ${googleUser.displayName} (${googleUser.email})");
 
-      // Step 2: Get Google Auth tokens
+      // Step 2: Token নেওয়া
       final googleAuth = await googleUser.authentication;
-      final idToken = googleAuth.idToken;
-      final accessToken = googleAuth.accessToken;
+      _logger.i("🔑 Got tokens: idToken=${googleAuth.idToken != null}, accessToken=${googleAuth.accessToken != null}");
 
-      if (idToken == null || accessToken == null) {
-        state = AsyncError("Google token not found", StackTrace.current);
-        return;
-      }
-
-      // Step 3: Authenticate with Supabase using Google tokens
+      // Step 3: Supabase এর সাথে Sign in
       final response = await supabase.auth.signInWithIdToken(
         provider: OAuthProvider.google,
-        idToken: idToken,
-        accessToken: accessToken,
+        idToken: googleAuth.idToken!,
+        accessToken: googleAuth.accessToken,
       );
 
-      // Step 4: Handle response
       if (response.user != null) {
-        state = const AsyncData(null); // ✅ success
+        _logger.i("🎉 Supabase login success → ${response.user!.email}");
       } else {
-        state = AsyncError("Google Sign-In failed", StackTrace.current);
+        _logger.e("❌ Supabase login failed, no user returned");
       }
+
+      state = const AsyncData(null);
     } catch (e, st) {
+      _logger.e("🔥 Error during Google Sign-In", error: e, stackTrace: st);
       state = AsyncError(e, st);
     }
   }
+
+  Future<void> signOut() async {
+    await supabase.auth.signOut();
+    await _googleSignIn.signOut();
+    _logger.i("👋 Signed out from Google + Supabase");
+  }
 }
 
-/// ✅ Riverpod Provider for Google Sign-In
-final googleSignInProvider =
-StateNotifierProvider<GoogleSignInNotifier, AsyncValue<void>>(
-      (ref) => GoogleSignInNotifier(),
-);
+final googleAuthProvider =
+StateNotifierProvider<GoogleAuthController, AsyncValue<void>>(
+        (ref) => GoogleAuthController());

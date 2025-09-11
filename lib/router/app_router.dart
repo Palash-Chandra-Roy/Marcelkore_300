@@ -5,7 +5,6 @@ import 'package:my_app/features/home/screen/home_screen.dart';
 import 'package:my_app/screens/main_app.dart';
 import 'package:my_app/features/record/screen/record_form_screen.dart';
 import 'package:my_app/screens/record_details_screen.dart';
-import 'package:my_app/screens/records_list_screen.dart';
 import 'package:my_app/screens/settings_screen.dart';
 import 'package:my_app/screens/singup_screen.dart';
 import 'package:my_app/widgets/global_snackbar.dart';

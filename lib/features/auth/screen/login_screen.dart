@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as ref;
+import 'package:my_app/controller/google_controller.dart';
 import 'package:my_app/features/auth/logic/login_controller.dart';
+import 'package:my_app/features/home/screen/home_screen.dart';
 import 'package:my_app/screens/main_app.dart';
 import 'package:my_app/screens/singup_screen.dart';
 import 'package:my_app/widgets/global_snackbar.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,6 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
 
+
   @override
   void initState() {
     super.initState();
@@ -34,10 +41,16 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+
   @override
   Widget build(BuildContext context) {
-    
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery
+        .of(context)
+        .size
+        .width;
+
+    // final state = ref.watch(googleAuthProvider);
+    // final controller = ref.read(googleAuthProvider.notifier);
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -61,22 +74,34 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: 64,
                           height: 64,
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
+                            color: Theme
+                                .of(context)
+                                .colorScheme
+                                .primary,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Icon(
                             Icons.person,
-                            color: Theme.of(context).colorScheme.onPrimary,
+                            color: Theme
+                                .of(context)
+                                .colorScheme
+                                .onPrimary,
                           ),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           "Welcome Back My App",
-                          style: Theme.of(context).textTheme.headlineSmall,
+                          style: Theme
+                              .of(context)
+                              .textTheme
+                              .headlineSmall,
                         ),
                         Text(
                           "Sign in to continue",
-                          style: Theme.of(context).textTheme.bodyMedium,
+                          style: Theme
+                              .of(context)
+                              .textTheme
+                              .bodyMedium,
                         ),
                       ],
                     ),
@@ -87,7 +112,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       "Email",
                       style: TextStyle(
                         fontSize: 16,
-                        color: Theme.of(context)
+                        color: Theme
+                            .of(context)
                             .colorScheme
                             .onSurface
                             .withOpacity(0.6),
@@ -113,7 +139,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       "Password",
                       style: TextStyle(
                         fontSize: 16,
-                        color: Theme.of(context)
+                        color: Theme
+                            .of(context)
                             .colorScheme
                             .onSurface
                             .withOpacity(0.6),
@@ -191,6 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
+                            side: const BorderSide(color: Colors.grey),
                           ),
                           child: isLoading
                               ? const SizedBox(
@@ -214,7 +242,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         Expanded(
                           child: Container(
                             height: 1,
-                            color: Theme.of(context)
+                            color: Theme
+                                .of(context)
                                 .colorScheme
                                 .outline
                                 .withOpacity(0.2),
@@ -227,7 +256,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: Theme.of(context)
+                              color: Theme
+                                  .of(context)
                                   .colorScheme
                                   .onSurface
                                   .withOpacity(0.6),
@@ -238,7 +268,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         Expanded(
                           child: Container(
                             height: 1,
-                            color: Theme.of(context)
+                            color: Theme
+                                .of(context)
                                 .colorScheme
                                 .outline
                                 .withOpacity(0.2),
@@ -249,25 +280,46 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 16),
 
                     // Google Login
-                    OutlinedButton(
-                      onPressed: ()  async{
-                    //  await  ref.read(googleSignInProvider.notifier).signInWithGoogle();
 
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final state = ref.watch(googleAuthProvider);
+                        final isLoading = state.isLoading;
 
+                        return OutlinedButton(
+                          onPressed: isLoading
+                              ? null
+                              : () => ref.read(googleAuthProvider.notifier).signInWithGoogle(),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (isLoading)
+                                const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              else
+                                Image.asset(
+                                  "assets/images/google.png",
+                                  height: 25,
+                                  width: 25,
+                                ),
+                              const SizedBox(width: 8),
+                              Text(isLoading ? "Signing in..." : "Continue with Google"),
+                            ],
+                          ),
+                        );
                       },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                        side: const BorderSide(color: Colors.grey),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset("assets/images/google.png", height: 25, width: 25),
-                          const SizedBox(width: 8),
-                          const Text("Continue with Google"),
-                        ],
-                      ),
-                    ) ,
+                    ),
+
+
+
+
+
 
 
                     const SizedBox(height: 16),
@@ -281,13 +333,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-
-                          Image.asset("assets/images/apple.png",height: 25, width: 25, ),
-
+                          Image.asset("assets/images/apple.png", height: 25,
+                            width: 25,),
                           SizedBox(width: 8,),
-
-
-                          
                           const Text("Continue with Apple"),
                         ],
                       ),
@@ -335,4 +383,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-}
+}//////
