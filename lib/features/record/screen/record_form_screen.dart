@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_app/features/record/logic/record_form_controller.dart';
+import 'package:my_app/screens/main_app.dart';
 import 'package:my_app/widgets/global_snackbar.dart';
 
 final recordFormProvider = StateProvider<Map<String, dynamic>>((ref) {
@@ -177,7 +178,7 @@ class RecordFormScreen extends ConsumerWidget {
                               type: CustomSnackType.success,
                             );
                           }
-                          context.pop();
+                          context.push(MainApp.routeName);
                         } catch (e) {
                           GlobalSnackBar.show(
                             context,

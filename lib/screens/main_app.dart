@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:my_app/screens/home_screen.dart';
+import 'package:my_app/features/home/screen/home_screen.dart';
 import 'package:my_app/screens/records_list_screen.dart';
 import 'package:my_app/screens/settings_screen.dart';
 
@@ -90,7 +90,6 @@ class MainApp extends ConsumerWidget {
         return 2;
     }
   }
-
   AppTab _getTabFromIndex(int i) {
     switch (i) {
       case 0:

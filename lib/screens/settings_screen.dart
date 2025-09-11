@@ -41,7 +41,6 @@ class SettingsScreen extends ConsumerWidget {
                         Icons.person,
                         size: 32,
                         color: Colors.blue,
-
                         // Theme
                         //     .of(context)
                         //     .colorScheme

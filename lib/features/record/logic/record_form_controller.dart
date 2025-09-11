@@ -56,16 +56,18 @@ Future<void> updateRecord({
   }
 }
 
-/// DELETE
+
+
 Future<void> deleteRecord(String recordId) async {
   try {
-    final data = await Supabase.instance.client
+    await Supabase.instance.client
         .from('records')
         .delete()
         .eq('id', recordId);
 
-    print("✅ Record deleted: $data");
+    print("✅ Record deleted: $recordId");
   } catch (e) {
     print("❌ Delete error: $e");
+    rethrow;
   }
 }
