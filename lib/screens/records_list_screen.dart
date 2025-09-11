@@ -1,109 +1,132 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/record.dart';
-import '../controller/records_list_controller.dart';
+import 'package:go_router/go_router.dart';
+import 'package:my_app/core/utils/fetch_function.dart';
+import 'package:my_app/features/record/logic/record_form_controller.dart';
+import 'package:my_app/features/record/screen/record_form_screen.dart';
+import 'package:my_app/models/record_data.dart';
+import 'package:my_app/screens/record_details_screen.dart';
+import 'package:my_app/widgets/global_snackbar.dart';
 
-class RecordsListScreen extends ConsumerWidget {
+enum RecordStatus { active, pending, archived }
 
-
-  const RecordsListScreen({
-    super.key,
-   
-  });
+class RecordsListScreen extends ConsumerStatefulWidget {
+  const RecordsListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(recordsProvider);
-    final controller = ref.read(recordsProvider.notifier);
+  ConsumerState<RecordsListScreen> createState() => _RecordsListScreenState();
+}
 
-    if (state.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
+  RecordStatus? selectedFilter; // null = All
+  String searchQuery = ""; // 🔹 search query state
 
-    if (state.error.isNotEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            const Text('Error loading records'),
-            const SizedBox(height: 8),
-            Text(state.error, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: controller.loadRecords,
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final filteredRecords = controller.filteredRecords;
+  @override
+  Widget build(BuildContext context) {
+    final asyncRecords = ref.watch(recordsStreamProvider);
 
     return Column(
       children: [
-        _buildSearchAndFilter(state, controller, context),
+        _buildSearchAndFilter(context),
         Expanded(
-          child: filteredRecords.isEmpty
-              ? _buildEmptyState()
-              : RefreshIndicator(
-            onRefresh: controller.loadRecords,
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: filteredRecords.length,
-              itemBuilder: (context, index) {
-                final record = filteredRecords[index];
-                return _buildRecordCard(record, controller, context);
-              },
-            ),
+          child: asyncRecords.when(
+            data: (records) {
+              // 🔹 Step 1: Filter by status
+              var filtered = selectedFilter == null
+                  ? records
+                  : records
+                        .where(
+                          (r) =>
+                              r.status.toLowerCase() ==
+                              selectedFilter.toString().split('.').last,
+                        )
+                        .toList();
+
+              // 🔹 Step 2: Filter by search query (title)
+              if (searchQuery.isNotEmpty) {
+                filtered = filtered
+                    .where(
+                      (r) => r.title.toLowerCase().contains(
+                        searchQuery.toLowerCase(),
+                      ),
+                    )
+                    .toList();
+              }
+
+              if (filtered.isEmpty) return _buildEmptyState();
+
+              return ListView.builder(
+                padding: EdgeInsets.all(16.w),
+                itemCount: filtered.length,
+                itemBuilder: (context, index) {
+                  final record = filtered[index];
+                  return _buildRecordCard(record, context);
+                },
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, _) =>
+                Center(child: Text("Error loading records: $err")),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSearchAndFilter(
-      RecordsState state, RecordsController controller, BuildContext context) {
+  // 🔹 Search & Filter Section
+  Widget _buildSearchAndFilter(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        border: Border(bottom: BorderSide(color: Theme.of(context).dividerColor)),
+        border: Border(
+          bottom: BorderSide(color: Theme.of(context).dividerColor),
+        ),
       ),
       child: Column(
         children: [
-          // Search
-          TextField(
+          // Search box
+          TextFormField(
             decoration: InputDecoration(
-              hintText: 'Search records...',
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black87),
+              ),
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.grey.shade500),
+              ),
+              hintText: 'Search by title...',
               prefixIcon: const Icon(Icons.search),
-              suffixIcon: state.searchQuery.isNotEmpty
+              suffixIcon: searchQuery.isNotEmpty
                   ? IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: () => controller.setSearch(""),
-              )
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        setState(() {
+                          searchQuery = "";
+                        });
+                      },
+                    )
                   : null,
             ),
-            onChanged: controller.setSearch,
+            onChanged: (value) {
+              setState(() {
+                searchQuery = value;
+              });
+            },
           ),
-          const SizedBox(height: 12),
-          // Filter
+          SizedBox(height: 12.h),
+          // Filter buttons
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _buildFilterButton('All', state, controller, null, context),
-                const SizedBox(width: 8),
-                _buildFilterButton(
-                    'Active', state, controller, RecordStatus.active, context),
-                const SizedBox(width: 8),
-                _buildFilterButton(
-                    'Pending', state, controller, RecordStatus.pending, context),
-                const SizedBox(width: 8),
-                _buildFilterButton('Archived', state, controller,
-                    RecordStatus.archived, context),
+                _buildFilterButton("All", null),
+                SizedBox(width: 8.w),
+                _buildFilterButton("Active", RecordStatus.active),
+                SizedBox(width: 8.w),
+                _buildFilterButton("Pending", RecordStatus.pending),
+                SizedBox(width: 8.w),
+                _buildFilterButton("Archived", RecordStatus.archived),
               ],
             ),
           ),
@@ -112,15 +135,15 @@ class RecordsListScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildRecordCard(
-      Record record, RecordsController controller, BuildContext context) {
+  // 🔹 Record Card (using RecordData)
+  Widget _buildRecordCard(RecordData record, BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       child: InkWell(
-        onTap: (){},
-        borderRadius: BorderRadius.circular(10),
+        onTap: () {context.push(RecordDetailsScreen.routeName,extra: record.id);},
+        borderRadius: BorderRadius.circular(10.r),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -128,60 +151,71 @@ class RecordsListScreen extends ConsumerWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Title + Status
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(record.title,
-                            style: Theme.of(context).textTheme.titleMedium),
-                        const SizedBox(height: 4),
+                        Text(
+                          record.title,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleMedium?.copyWith(fontSize: 16.sp),
+                        ),
+                        SizedBox(height: 4.h),
                         _buildStatusChip(record.status),
                       ],
                     ),
                   ),
+                  // Value + Actions
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '\$${record.value.toStringAsFixed(2)}',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w600),
+                        "\$${record.value.toStringAsFixed(2)}",
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15.sp,
+                            ),
                       ),
                       Row(
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.edit, size: 18),
-                            onPressed: (){},
+                            icon: Icon(Icons.edit, size: 18.sp),
+                            onPressed: () {  context.push(RecordFormScreen.routeName,
+                            extra: record.id);},
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete, size: 18),
-                            onPressed: () async {
-                              final confirm = await _showDeleteDialog(
-                                  context, record.title);
-                              if (confirm) {
-                                await controller.deleteRecord(record.id);
-                                ;
-                              }
-                            },
+                            icon: Icon(Icons.delete, size: 18.sp),
+                            onPressed: () {
+                              showDeleteDialog(context, record.id,ref);
+                              },
                           ),
                         ],
-                      )
+                      ),
                     ],
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
+              // Details
               Text(
                 record.details,
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontSize: 13.sp),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 8),
-              Text('Updated ${_formatDateTime(record.updatedAt)}',
-                  style: Theme.of(context).textTheme.bodySmall),
+              SizedBox(height: 8.h),
+              // Updated Time
+              Text(
+                "Updated ${record.updatedAgo}",
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontSize: 12.sp),
+              ),
             ],
           ),
         ),
@@ -189,51 +223,35 @@ class RecordsListScreen extends ConsumerWidget {
     );
   }
 
-  Future<bool> _showDeleteDialog(BuildContext context, String title) async {
-    return await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Delete Record'),
-        content: Text('Are you sure you want to delete "$title"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    ) ??
-        false;
-  }
-
+  // 🔹 Empty State
   Widget _buildEmptyState() {
-    return const Center(
+    return Center(
       child: Padding(
-        padding: EdgeInsets.all(32),
+        padding: EdgeInsets.all(32.w),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text('No records found'),
+            Icon(Icons.inbox_outlined, size: 64.sp, color: Colors.grey),
+            SizedBox(height: 16.h),
+            Text('No records found', style: TextStyle(fontSize: 14.sp)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFilterButton(String label, RecordsState state,
-      RecordsController controller, RecordStatus? status, BuildContext context) {
-    final isSelected = state.statusFilter == status;
+  // 🔹 Filter Button
+  Widget _buildFilterButton(String label, RecordStatus? status) {
+    final isSelected = selectedFilter == status;
+
     return SizedBox(
-      height: 32,
+      height: 32.h,
       child: ElevatedButton(
-        onPressed: () => controller.setStatusFilter(status),
+        onPressed: () {
+          setState(() {
+            selectedFilter = status; // update filter state
+          });
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: isSelected
               ? Theme.of(context).colorScheme.primary
@@ -246,54 +264,72 @@ class RecordsListScreen extends ConsumerWidget {
               : BorderSide(color: Theme.of(context).dividerColor),
           elevation: isSelected ? 2 : 0,
         ),
-        child: Text(label),
+        child: Text(label, style: TextStyle(fontSize: 13.sp)),
       ),
     );
   }
 
-  Widget _buildStatusChip(RecordStatus status) {
+  // 🔹 Status Chip
+  Widget _buildStatusChip(String status) {
     final color = _getStatusColor(status);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: Text(
-        _getStatusString(status),
-        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w500),
+        status[0].toUpperCase() + status.substring(1),
+        style: TextStyle(
+          color: color,
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }
 
-  Color _getStatusColor(RecordStatus status) {
-    switch (status) {
-      case RecordStatus.active:
+  // Helpers
+  static Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'active':
         return Colors.green;
-      case RecordStatus.pending:
+      case 'pending':
         return Colors.orange;
-      case RecordStatus.archived:
+      case 'archived':
         return Colors.grey;
+      default:
+        return Colors.blueGrey;
     }
   }
+}
 
-  String _getStatusString(RecordStatus status) {
-    switch (status) {
-      case RecordStatus.active:
-        return 'Active';
-      case RecordStatus.pending:
-        return 'Pending';
-      case RecordStatus.archived:
-        return 'Archived';
-    }
-  }
-
-  String _formatDateTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final difference = now.difference(dateTime);
-    if (difference.inDays > 0) return '${difference.inDays}d ago';
-    if (difference.inHours > 0) return '${difference.inHours}h ago';
-    if (difference.inMinutes > 0) return '${difference.inMinutes}m ago';
-    return 'just now';
-  }
+Future<void> showDeleteDialog(BuildContext context, String recordId, ref) async {
+  return showDialog(
+    context: context,
+    builder: (ctx) {
+      return AlertDialog(
+        title: const Text("Confirm Delete"),
+        content: const Text("Are you sure you want to delete this record?"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop(); // ❌ Cancel
+            },
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              Navigator.of(ctx).pop(); // ডায়ালগ বন্ধ
+              await deleteRecord(recordId); // 
+             GlobalSnackBar.show(context, title: "Delete", message: "Record deleted successfully",type: CustomSnackType.success) ;
+              await ref.invalidate(recordsStreamProvider);
+             },
+            child: const Text("Delete"),
+          ),
+        ],
+      );
+    },
+  );
 }

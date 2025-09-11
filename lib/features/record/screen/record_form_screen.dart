@@ -1,160 +1,209 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:my_app/models/record.dart';
-import '../../../controller/record_form_controller.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:my_app/features/record/logic/record_form_controller.dart';
+import 'package:my_app/screens/main_app.dart';
+import 'package:my_app/widgets/global_snackbar.dart';
+
+final recordFormProvider = StateProvider<Map<String, dynamic>>((ref) {
+  return {
+    'status': 'active',
+  };
+});
 
 class RecordFormScreen extends ConsumerWidget {
-  const RecordFormScreen({super.key});
+  const RecordFormScreen({super.key, this.isId});
+  final String? isId;
+
   static const routeName = "/recordFormScreen";
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controller = ref.read(recordFormProvider.notifier);
-    final state = ref.watch(recordFormProvider);
+    final bool isEditing = isId != null && isId!.isNotEmpty;
+    final statusOptions = {
+      'active': 'Active',
+      'pending': 'Pending',
+      'archived': 'Archived',
+    };
 
-    final isEditing = controller.editingRecord != null;
+    final formKey = GlobalKey<FormState>();
+    final titleController = TextEditingController();
+    final detailsController = TextEditingController();
+    final valueController = TextEditingController();
 
     return Scaffold(
       appBar: AppBar(
         title: Text(isEditing ? 'Edit Record' : 'Create Record'),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => Navigator.pop(context), // cancel → back
+          onPressed: () => context.pop(),
         ),
-        actions: [
-          TextButton(
-            onPressed: state.isLoading
-                ? null
-                : () async {
-              final saved = await controller.saveRecord(context);
-              if (saved != null && context.mounted) {
-                Navigator.pop(context, saved); // return saved record
-              }
-            },
-            child: state.isLoading
-                ? const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-                : const Text('Save'),
-          ),
-        ],
       ),
-      body: Form(
-        key: controller.formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Title
-              Text('Title', style: Theme.of(context).textTheme.labelLarge),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: controller.titleController,
-                decoration: const InputDecoration(
-                  hintText: 'Enter record title',
-                  prefixIcon: Icon(Icons.title),
+      body: Padding(
+        padding: EdgeInsets.all(16.w),
+        child: Form(
+          key: formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Title
+                Text('Title', style: Theme.of(context).textTheme.labelLarge),
+                SizedBox(height: 8.h),
+                TextFormField(
+                  controller: titleController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: 'Enter record title',
+                    prefixIcon: Icon(Icons.title),
+                  ),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Please enter a title'
+                      : (value.trim().length < 3
+                      ? 'Title must be at least 3 characters'
+                      : null),
                 ),
-                validator: (value) => value == null || value.trim().isEmpty
-                    ? 'Please enter a title'
-                    : (value.trim().length < 3
-                    ? 'Title must be at least 3 characters'
-                    : null),
-              ),
-              const SizedBox(height: 24),
+                SizedBox(height: 24.h),
 
-              // Details
-              Text('Details', style: Theme.of(context).textTheme.labelLarge),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: controller.detailsController,
-                maxLines: 4,
-                decoration: const InputDecoration(
-                  hintText: 'Enter record details',
-                  prefixIcon: Icon(Icons.description),
+                // Details
+                Text('Details', style: Theme.of(context).textTheme.labelLarge),
+                SizedBox(height: 8.h),
+                TextFormField(
+                  controller: detailsController,
+                  maxLines: 4,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: 'Enter record details',
+                    prefixIcon: Icon(Icons.description),
+                  ),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Please enter details'
+                      : (value.trim().length < 10
+                      ? 'Details must be at least 10 characters'
+                      : null),
                 ),
-                validator: (value) => value == null || value.trim().isEmpty
-                    ? 'Please enter details'
-                    : (value.trim().length < 10
-                    ? 'Details must be at least 10 characters'
-                    : null),
-              ),
-              const SizedBox(height: 24),
+                SizedBox(height: 24.h),
 
-              // Status
-              Text('Status', style: Theme.of(context).textTheme.labelLarge),
-              const SizedBox(height: 8),
-              DropdownButtonFormField(
-                value: state.selectedStatus,
-                onChanged: (newValue) {
-                  if (newValue != null) controller.setStatus(newValue);
-                },
-                items: RecordStatus.values
-                    .map((status) => DropdownMenuItem(
-                  value: status,
-                  child: Text(status.toString().split('.').last),
-                ))
-                    .toList(),
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.flag),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Value
-              Text('Value', style: Theme.of(context).textTheme.labelLarge),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: controller.valueController,
-                keyboardType:
-                const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  hintText: '0.00',
-                  prefixIcon: Icon(Icons.attach_money),
-                ),
-                validator: (value) {
-                  final parsed = double.tryParse(value ?? "");
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a value';
-                  }
-                  if (parsed == null) return 'Enter a valid number';
-                  if (parsed < 0) return 'Value cannot be negative';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 32),
-
-              // Buttons
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: state.isLoading
-                      ? null
-                      : () async {
-                    final saved = await controller.saveRecord(context);
-                    if (saved != null && context.mounted) {
-                      Navigator.pop(context, saved);
-                    }
+                // Status
+                Text('Status', style: Theme.of(context).textTheme.labelLarge),
+                SizedBox(height: 8.h),
+                Consumer(
+                  builder: (context, ref, _) {
+                    final selectedStatus =
+                    ref.watch(recordFormProvider)['status'] as String;
+                    return DropdownButtonFormField<String>(
+                      value: selectedStatus,
+                      onChanged: (newValue) {
+                        if (newValue != null) {
+                          ref
+                              .read(recordFormProvider.notifier)
+                              .state['status'] = newValue;
+                        }
+                      },
+                      items: statusOptions.entries.map((entry) {
+                        return DropdownMenuItem<String>(
+                          value: entry.key,
+                          child: Text(entry.value),
+                        );
+                      }).toList(),
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.flag),
+                      ),
+                    );
                   },
-                  child: state.isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : Text(isEditing ? 'Update Record' : 'Create Record'),
                 ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context), // cancel → back
-                  child: const Text('Cancel'),
+                SizedBox(height: 24.h),
+
+                // Value
+                Text('Value', style: Theme.of(context).textTheme.labelLarge),
+                SizedBox(height: 8.h),
+                TextFormField(
+                  controller: valueController,
+                  keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: '0.00',
+                    prefixIcon: Icon(Icons.attach_money),
+                  ),
+                  validator: (value) {
+                    final parsed = double.tryParse(value ?? "");
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter a value';
+                    }
+                    if (parsed == null) return 'Enter a valid number';
+                    if (parsed < 0) return 'Value cannot be negative';
+                    return null;
+                  },
                 ),
-              ),
-            ],
+                SizedBox(height: 32.h),
+
+                // Save Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 48.h,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (formKey.currentState?.validate() ?? false) {
+                        final status =
+                        ref.read(recordFormProvider)['status'] as String;
+
+                        try {
+                          if (isEditing) {
+                            await updateRecord(
+                              recordId: isId!,
+                              title: titleController.text,
+                              details: detailsController.text,
+                              value: valueController.text,
+                              status: status,
+                            );
+                            GlobalSnackBar.show(
+                              context,
+                              title: "Updated",
+                              message: "Record updated successfully",
+                            );
+                          } else {
+                            await createRecord(
+                              title: titleController.text,
+                              details: detailsController.text,
+                              value: valueController.text,
+                              status: status,
+                            );
+                            GlobalSnackBar.show(
+                              context,
+                              title: "Created",
+                              message: "Record created successfully",
+                              type: CustomSnackType.success,
+                            );
+                          }
+                          context.push(MainApp.routeName);
+                        } catch (e) {
+                          GlobalSnackBar.show(
+                            context,
+                            title: "Error",
+                            message: e.toString(),
+                          );
+                        }
+                      }
+                    },
+                    child: Text(isEditing ? 'Update Record' : 'Create Record'),
+                  ),
+                ),
+                SizedBox(height: 12.h),
+
+                // Cancel Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 48.h,
+                  child: OutlinedButton(
+                    onPressed: () => context.pop(),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

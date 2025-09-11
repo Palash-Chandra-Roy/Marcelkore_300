@@ -1,5 +1,5 @@
 // import 'package:get/get.dart';
-// import '../models/record.dart';
+// import '../models/record_all_model.dart';
 // import '../services/supabase_service.dart';
 //
 // enum Screen { login, signup, home, records, recordForm, recordDetails, settings }

@@ -1,13 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:my_app/controller/home_controller.dart';
+import 'package:my_app/screens/main_app.dart';
+import 'package:my_app/screens/records_list_screen.dart';
 
-class HomeScreen extends ConsumerWidget {
+import '../data/last_update_time_data.dart';
+import '../logic/record_count_reverpod.dart';
+
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
+
   static const routeName = "/homeScreen";
+  @override
+  ConsumerState<HomeScreen> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Home page load হলে auto refresh হবে
+    Future.microtask(() {
+      ref.invalidate(recordCountProvider);
+      ref.invalidate(lastActivityProvider);
+    });
+  }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final state = ref.watch(homeProvider);
     final controller = ref.read(homeProvider.notifier);
 
@@ -42,24 +64,35 @@ class HomeScreen extends ConsumerWidget {
             Row(
               children: [
                 Expanded(
-                  child: _buildStatCard(
-                    context,
-                    'Total Records',
-                    state.totalRecords.toString(),
-                    Icons.description,
+                  child: Consumer(
+                    builder: (context, ref, _) {
+                      final count = ref.watch(recordCountProvider);
+                      return _buildStatCard(
+                        context,
+                        'Total Records',
+                        count.toString(),
+                        Icons.description,
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: _buildStatCard(
-                    context,
-                    'Last Update',
-                    state.lastUpdate,
-                    Icons.access_time,
+                  child: Consumer(
+                    builder: (context, ref, _) {
+                      final activity = ref.watch(lastActivityProvider);
+                      return _buildStatCard(
+                        context,
+                        'Last Update',
+                        activity.lastCreated, // যেমন "10m", "2h"
+                        Icons.access_time,
+                      );
+                    },
                   ),
                 ),
               ],
-            ),
+            )
+            ,
 
             const SizedBox(height: 24),
 
@@ -78,8 +111,7 @@ class HomeScreen extends ConsumerWidget {
                     Text(
                       'This app demonstrates basic CRUD operations with user authentication. Create, view, edit, and delete records to see it in action.',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color:
-                        Theme.of(context).textTheme.bodySmall?.color,
+                        color: Theme.of(context).textTheme.bodySmall?.color,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -88,8 +120,10 @@ class HomeScreen extends ConsumerWidget {
                         SizedBox(
                           width: double.infinity,
                           height: 48,
-                          child: ElevatedButton(
-                            onPressed:(){ HomeController.onCreateRecord(context);},
+                          child: OutlinedButton(
+                            onPressed: () {
+                              HomeController.onCreateRecord(context);
+                            },
                             child: const Text('Create Your First Record'),
                           ),
                         ),
@@ -98,7 +132,9 @@ class HomeScreen extends ConsumerWidget {
                           width: double.infinity,
                           height: 48,
                           child: OutlinedButton(
-                            onPressed:(){ HomeController.onNavigateToRecords();},
+                            onPressed: () {
+                              ref.read(currentTabProvider.notifier).state = AppTab.records;
+                            },
                             child: const Text('View All Records'),
                           ),
                         ),
@@ -126,7 +162,9 @@ class HomeScreen extends ConsumerWidget {
                 _buildFeatureItem(context, 'User authentication & profiles'),
                 const SizedBox(height: 12),
                 _buildFeatureItem(
-                    context, 'Create, read, update, delete records'),
+                  context,
+                  'Create, read, update, delete records',
+                ),
                 const SizedBox(height: 12),
                 _buildFeatureItem(context, 'Real-time data synchronization'),
                 const SizedBox(height: 12),
@@ -140,35 +178,39 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildStatCard(
-      BuildContext context,
-      String title,
-      String value,
-      IconData icon,
-      ) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 32,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w500,
+    BuildContext context,
+    String title,
+    String value,
+    IconData icon,
+  ) {
+    return Container(
+      width: 170.w,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                size: 32,
+                color: Theme.of(context).colorScheme.primary,
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.bodySmall,
-              textAlign: TextAlign.center,
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 25,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.bodySmall,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -193,10 +235,7 @@ class HomeScreen extends ConsumerWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              text,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
           ),
         ],
       ),

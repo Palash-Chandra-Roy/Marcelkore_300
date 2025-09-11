@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_app/features/auth/screen/login_screen.dart';
-import 'package:my_app/screens/home_screen.dart';
+import 'package:my_app/features/home/screen/home_screen.dart';
 import 'package:my_app/screens/main_app.dart';
 import 'package:my_app/features/record/screen/record_form_screen.dart';
+import 'package:my_app/screens/record_details_screen.dart';
+import 'package:my_app/screens/records_list_screen.dart';
+import 'package:my_app/screens/settings_screen.dart';
 import 'package:my_app/screens/singup_screen.dart';
 import 'package:my_app/widgets/global_snackbar.dart';
 import 'error_screen.dart';
@@ -43,9 +46,24 @@ class AppRouter {
           name: MainApp.routeName,
           builder: (context, state) => const MainApp(),
         ),GoRoute(
-          path: RecordFormScreen.routeName,
+          path: "${RecordFormScreen.routeName}",   // 👈 :id dynamic parameter
           name: RecordFormScreen.routeName,
-          builder: (context, state) => const RecordFormScreen(),
+          builder: (context, state) {
+            final String? id = state.extra as String?;   // 👈 এখানে id nullable
+            return RecordFormScreen(isId: id);
+          },
+        ),
+
+        GoRoute(
+          path: SettingsScreen.routeName,
+          name: SettingsScreen.routeName,
+          builder: (context, state) => const SettingsScreen(),
+        ),GoRoute(
+          path: RecordDetailsScreen.routeName,
+          name: RecordDetailsScreen.routeName,
+          builder: (context, state)  {
+            final String? id = state.extra as String?;   // 👈 এখানে id nullable
+            return RecordDetailsScreen(recordId: id ??"",);},
         ),
       ]);
 }

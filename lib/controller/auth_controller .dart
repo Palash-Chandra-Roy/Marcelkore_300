@@ -2,7 +2,7 @@
 // import 'package:google_sign_in/google_sign_in.dart';
 // import 'package:supabase_flutter/supabase_flutter.dart';
 // import '../services/supabase_service.dart';
-// import '../models/record.dart';
+// import '../models/record_all_model.dart';
 // import '../utils/snackbar_utils.dart';
 //
 // class AuthController extends GetxController {
