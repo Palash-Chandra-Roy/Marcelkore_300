@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as ref;
-import 'package:my_app/controller/google_controller.dart';
+import 'package:my_app/features/auth/data/google_controller.dart';
 import 'package:my_app/features/auth/logic/login_controller.dart';
 import 'package:my_app/features/home/screen/home_screen.dart';
 import 'package:my_app/screens/main_app.dart';

@@ -5,7 +5,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:my_app/router/app_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'controller/settings_controller.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -30,7 +29,7 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(settingsProvider);
+   // final settings = ref.watch(settingsProvider);
 
     return MaterialApp.router(
       title: 'My App',
@@ -38,9 +37,9 @@ class MyApp extends ConsumerWidget {
       routerConfig: AppRouter.appRouter,
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
-      themeMode: settings.darkModeEnabled
-          ? ThemeMode.dark
-          : ThemeMode.light,
+     // themeMode: settings.darkModeEnabled
+      //    ? ThemeMode.dark
+     //     : ThemeMode.light,
     );
   }
 }
