@@ -67,7 +67,6 @@ class SignUpScreen extends ConsumerWidget {
                       v == null || v.isEmpty ? "Enter your name" : null,
                     ),
                     const SizedBox(height: 16),
-
                     // Email
                     TextFormField(
                       controller: controller.emailController,
@@ -123,9 +122,7 @@ class SignUpScreen extends ConsumerWidget {
                             : const Text("Sign Up"),
                       ),
                     ),
-
                     const SizedBox(height: 24),
-
                     // Already have account
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,

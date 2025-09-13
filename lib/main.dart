@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:my_app/router/app_router.dart';
+import 'package:my_app/theme/controller/dark_mode.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'theme/app_theme.dart';
@@ -29,7 +30,7 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-   // final settings = ref.watch(settingsProvider);
+    final isDarkMode = ref.watch(themeControllerProvider);
 
     return MaterialApp.router(
       title: 'My App',
@@ -37,7 +38,7 @@ class MyApp extends ConsumerWidget {
       routerConfig: AppRouter.appRouter,
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
-     // themeMode: settings.darkModeEnabled
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
       //    ? ThemeMode.dark
      //     : ThemeMode.light,
     );
