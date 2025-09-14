@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_app/core/utils/fetch_function.dart';
 import 'package:my_app/features/auth/screen/login_screen.dart';
-import 'package:my_app/models/record_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../theme/controller/dark_mode.dart';
 
 // এখানে recordsStreamProvider আছে
 
@@ -117,13 +118,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ),
                         ),
                         Switch(
-                          value: darkModeEnabled,
-                          onChanged: toggleDarkMode,
+                          value: ref.watch(themeControllerProvider),
+                          onChanged: (value) {
+                            ref.read(themeControllerProvider.notifier).toggleTheme();
+                          },
                         ),
                       ],
                     ),
                   ),
                 ),
+
+                
                 const SizedBox(height: 8),
 
                 // Notifications
@@ -153,7 +158,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-
                 // About
                 Card(
                   child: Padding(
