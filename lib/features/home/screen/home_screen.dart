@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:my_app/controller/home_controller.dart';
+import 'package:my_app/features/home/logic/home_controller.dart';
 import 'package:my_app/screens/main_app.dart';
 import 'package:my_app/screens/records_list_screen.dart';
 

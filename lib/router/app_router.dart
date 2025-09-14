@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_app/features/auth/screen/login_screen.dart';
+import 'package:my_app/features/auth/screen/splash_screen.dart';
 import 'package:my_app/features/home/screen/home_screen.dart';
+import 'package:my_app/main.dart';
 import 'package:my_app/screens/main_app.dart';
 import 'package:my_app/features/record/screen/record_form_screen.dart';
 import 'package:my_app/screens/record_details_screen.dart';
-import 'package:my_app/screens/records_list_screen.dart';
 import 'package:my_app/screens/settings_screen.dart';
 import 'package:my_app/screens/singup_screen.dart';
 import 'package:my_app/widgets/global_snackbar.dart';
 import 'error_screen.dart';
 class AppRouter {
-  static const String initial = LoginScreen.routeName;
+  static const String initial = SplashScreen.routeName;
   static final GoRouter appRouter = GoRouter(
       initialLocation:initial,
       errorBuilder: (context, state) {
@@ -45,6 +46,10 @@ class AppRouter {
           path: MainApp.routeName,
           name: MainApp.routeName,
           builder: (context, state) => const MainApp(),
+        ),GoRoute(
+          path: SplashScreen.routeName,
+          name: SplashScreen.routeName,
+          builder: (context, state) => const SplashScreen(),
         ),GoRoute(
           path: "${RecordFormScreen.routeName}",   // 👈 :id dynamic parameter
           name: RecordFormScreen.routeName,

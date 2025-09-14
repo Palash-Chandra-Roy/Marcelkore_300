@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:my_app/features/home/screen/home_screen.dart';
+import 'package:my_app/features/record/screen/record_form_screen.dart';
 import 'package:my_app/screens/records_list_screen.dart';
 import 'package:my_app/screens/settings_screen.dart';
 
@@ -49,7 +51,7 @@ class MainApp extends ConsumerWidget {
       floatingActionButton: currentTab == AppTab.records
           ? FloatingActionButton(
         onPressed: () {
-          // 👉 এখানে তোমার FAB action দেবে
+          context.push(RecordFormScreen.routeName);
         },
         child: const Icon(Icons.add),
       )
