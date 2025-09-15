@@ -1,4 +1,4 @@
-package com.example.crud_app
+package farmsentry.prod
 
 import io.flutter.embedding.android.FlutterActivity
 

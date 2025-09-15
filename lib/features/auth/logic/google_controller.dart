@@ -10,7 +10,8 @@ class GoogleAuthController extends StateNotifier<AsyncValue<void>> {
   GoogleAuthController() : super(const AsyncData(null));
 
   final SupabaseClient supabase = Supabase.instance.client;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email'], serverClientId: "103207095005-3ev2esf09jv8d8ef7fmg16dpnsl50l2s.apps.googleusercontent.com");
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email'],
+      serverClientId: "103207095005-3ev2esf09jv8d8ef7fmg16dpnsl50l2s.apps.googleusercontent.com");
 
   /// Google Sign In
   Future<void> signInWithGoogle() async {
