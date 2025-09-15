@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as ref;
-import 'package:my_app/features/auth/data/google_controller.dart';
+import 'package:my_app/features/auth/logic/google_controller.dart';
 import 'package:my_app/features/auth/logic/login_controller.dart';
 import 'package:my_app/features/home/screen/home_screen.dart';
 import 'package:my_app/screens/main_app.dart';
@@ -158,7 +158,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-
                     // Login Button
                     Consumer(
                       builder: (context, ref, _) {
@@ -278,69 +277,67 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-
                     // Google Login
-
                     Consumer(
                       builder: (context, ref, _) {
-                        final state = ref.watch(googleAuthProvider);
-                        final isLoading = state.isLoading;
+                        final googleState = ref.watch(googleAuthProvider);
+
+                        ref.listen<AsyncValue<void>>(googleAuthProvider, (previous, next) {
+                          if (next is AsyncData) {
+                            // ✅ Success হলে home এ যাবে
+                            context.go(MainApp.routeName);
+                          }
+                          if (next is AsyncError) {
+                           GlobalSnackBar.show(context, title:"Error", message:"Login failed: ${next.error}",type: CustomSnackType.error);
+                          }
+                        });
+
+                        final isLoading = googleState is AsyncLoading;
 
                         return OutlinedButton(
                           onPressed: isLoading
                               ? null
-                              : () => ref.read(googleAuthProvider.notifier).signInWithGoogle(),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (isLoading)
-                                const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              else
-                                Image.asset(
-                                  "assets/images/google.png",
-                                  height: 25,
-                                  width: 25,
-                                ),
-                              const SizedBox(width: 8),
-                              Text(isLoading ? "Signing in..." : "Continue with Google"),
-                            ],
-                          ),
+                              : () async {
+                            await ref.read(googleAuthProvider.notifier).signInWithGoogle();
+                          },
+                          child: isLoading
+                              ? const CircularProgressIndicator()
+                              : Row(
+                                children: [
+                                  Spacer() ,
+
+                            Image.asset("assets/images/google.png", height: 25,
+                                    width: 25,),
+                                  SizedBox(width: 8,)      ,
+                                  const Text("Continue with Google"),
+                                  Spacer()
+                                ],
+                              ),
                         );
                       },
                     ),
 
 
 
-
-
-
-
                     const SizedBox(height: 16),
 
                     // Apple Login
-                    OutlinedButton(
-                      onPressed: () {},
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset("assets/images/apple.png", height: 25,
-                            width: 25,),
-                          SizedBox(width: 8,),
-                          const Text("Continue with Apple"),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
+                    // OutlinedButton(
+                    //   onPressed: () {},
+                    //   style: OutlinedButton.styleFrom(
+                    //     padding: const EdgeInsets.symmetric(vertical: 14),
+                    //   ),
+                    //   child: Row(
+                    //     mainAxisAlignment: MainAxisAlignment.center,
+                    //     children: [
+                    //       Image.asset("assets/images/apple.png", height: 25,
+                    //         width: 25,),
+                    //       SizedBox(width: 8,),
+                    //       const Text("Continue with Apple"),
+                    //     ],
+                    //   ),
+                    // ),
+                    // const SizedBox(height: 16),
 
                     // Forgot Password
                     TextButton(
