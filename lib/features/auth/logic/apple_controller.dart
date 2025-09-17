@@ -1,7 +1,12 @@
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
+
+final _logger = Logger();
 
 final appleAuthProvider =
 StateNotifierProvider<AppleAuthController, AsyncValue<void>>(
@@ -11,45 +16,58 @@ StateNotifierProvider<AppleAuthController, AsyncValue<void>>(
 class AppleAuthController extends StateNotifier<AsyncValue<void>> {
   AppleAuthController() : super(const AsyncData(null));
 
-  final SupabaseClient supabase = Supabase.instance.client;
+  final supabase = Supabase.instance.client;
 
-  /// Apple Sign-In Function
-  Future<void> signInWithApple(BuildContext context) async {
+  Future<void> signInWithApple() async {
     state = const AsyncLoading();
-
     try {
-      // ✅ এটা শুধু bool return করে
-      final success = await supabase.auth.signInWithOAuth(
-        OAuthProvider.apple,
-        redirectTo: "myapp://login-callback/",
+      _logger.i("🔹 Step 1: Generating rawNonce...");
+      final rawNonce = supabase.auth.generateRawNonce();
+      final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
+      _logger.i("✅ rawNonce generated: $rawNonce");
+      _logger.i("✅ hashedNonce generated: $hashedNonce");
+
+      _logger.i("🔹 Step 2: Requesting Apple credentials...");
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: hashedNonce,
       );
+      _logger.i("✅ Apple credential received: ${credential.toString()}");
 
-      if (!success) {
-        state = AsyncError("Apple login failed", StackTrace.current);
-        return;
+      final idToken = credential.identityToken;
+      if (idToken == null) {
+        _logger.e("❌ ID Token not found in credential");
+        throw const AuthException('Could not find ID Token');
       }
+      _logger.i("✅ ID Token received: ${idToken.substring(0, 20)}...");
 
-      // ✅ login successful হলে currentUser থেকে user info নাও
-      final user = supabase.auth.currentUser;
-      if (user == null) {
-        state = AsyncError("No user found", StackTrace.current);
-        return;
+      _logger.i("🔹 Step 3: Signing in with Supabase...");
+      final response = await supabase.auth.signInWithIdToken(
+        provider: OAuthProvider.apple,
+        idToken: idToken,
+        nonce: rawNonce,
+      );
+      _logger.i("✅ Supabase Auth Response: ${response.user?.id}");
+
+      // ✅ Save user data
+      final user = response.user;
+      if (user != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("user_id", user.id);
+        await prefs.setString("user_email", user.email ?? "");
+        _logger.i("✅ User saved in SharedPreferences (id=${user.id}, email=${user.email})");
+      } else {
+        _logger.w("⚠️ Supabase returned null user!");
       }
-
-      // SharedPreferences এ data save
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString("user_id", user.id);
-      await prefs.setString("email", user.email ?? "");
 
       state = const AsyncData(null);
-
-      // Navigate to Home
-      if (context.mounted) {
-        Navigator.pushReplacementNamed(context, "/home");
-      }
+      _logger.i("🎉 Apple Sign-In successful!");
     } catch (e, st) {
+      _logger.e("❌ Apple Sign-In failed", error: e, stackTrace: st);
       state = AsyncError(e, st);
     }
   }
-
 }

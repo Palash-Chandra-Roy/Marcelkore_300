@@ -63,6 +63,7 @@ class GoogleAuthController extends StateNotifier<AsyncValue<void>> {
   }
 
 
+
   /// Sign Out
   // Future<void> signOut() async {
   //   await supabase.auth.signOut();

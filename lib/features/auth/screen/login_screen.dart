@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as ref;
+import 'package:my_app/features/auth/logic/apple_controller.dart';
 import 'package:my_app/features/auth/logic/google_controller.dart';
 import 'package:my_app/features/auth/logic/login_controller.dart';
 import 'package:my_app/features/home/screen/home_screen.dart';
@@ -322,22 +323,47 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 16),
 
                     // Apple Login
-                    // OutlinedButton(
-                    //   onPressed: () {},
-                    //   style: OutlinedButton.styleFrom(
-                    //     padding: const EdgeInsets.symmetric(vertical: 14),
-                    //   ),
-                    //   child: Row(
-                    //     mainAxisAlignment: MainAxisAlignment.center,
-                    //     children: [
-                    //       Image.asset("assets/images/apple.png", height: 25,
-                    //         width: 25,),
-                    //       SizedBox(width: 8,),
-                    //       const Text("Continue with Apple"),
-                    //     ],
-                    //   ),
-                    // ),
-                    // const SizedBox(height: 16),
+                Consumer(
+                  builder: (context, ref, child) {
+                    final appleAuthState = ref.watch(appleAuthProvider);
+
+                    ref.listen(appleAuthProvider, (prev, next) {
+                      next.whenOrNull(
+                        error: (err, _) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Apple Sign-In failed: $err")),
+                          );
+                        },
+                      );
+                    });
+
+                    return OutlinedButton(
+                      onPressed: appleAuthState.isLoading
+                          ? null
+                          : () => ref.read(appleAuthProvider.notifier).signInWithApple(),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset("assets/images/apple.png", height: 25, width: 25),
+                          const SizedBox(width: 8),
+                          if (appleAuthState.isLoading)
+                            const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          else
+                            const Text("Continue with Apple"),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                
+                    const SizedBox(height: 16),
 
                     // Forgot Password
                     TextButton(

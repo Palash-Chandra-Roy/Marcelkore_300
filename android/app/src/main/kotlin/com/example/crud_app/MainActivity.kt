@@ -1,4 +1,4 @@
-package farmsentry.prod
+package io.farmsentry
 
 import io.flutter.embedding.android.FlutterActivity
 
