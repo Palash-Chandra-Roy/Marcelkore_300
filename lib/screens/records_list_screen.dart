@@ -7,6 +7,7 @@ import 'package:my_app/features/record/logic/record_form_controller.dart';
 import 'package:my_app/features/record/screen/record_form_screen.dart';
 import 'package:my_app/models/record_data.dart';
 import 'package:my_app/screens/record_details_screen.dart';
+import 'package:my_app/utils/record_form_args.dart';
 import 'package:my_app/widgets/global_snackbar.dart';
 
 enum RecordStatus { active, pending, archived }
@@ -184,7 +185,7 @@ class _RecordsListScreenState extends ConsumerState<RecordsListScreen> {
                           IconButton(
                             icon: Icon(Icons.edit, size: 18.sp),
                             onPressed: () {  context.push(RecordFormScreen.routeName,
-                            extra: record.id);},
+                            extra: RecordFormArgs(id: record.id,title: record.title,details: record.details,status: record.status, value: record.value,));},
                           ),
                           IconButton(
                             icon: Icon(Icons.delete, size: 18.sp),
@@ -324,7 +325,7 @@ Future<void> showDeleteDialog(BuildContext context, String recordId, ref) async 
               Navigator.of(ctx).pop(); // ডায়ালগ বন্ধ
               await deleteRecord(recordId); // 
              GlobalSnackBar.show(context, title: "Delete", message: "Record deleted successfully",type: CustomSnackType.success) ;
-              await ref.invalidate(recordsStreamProvider);
+               ref.invalidate(recordsStreamProvider);
              },
             child: const Text("Delete"),
           ),

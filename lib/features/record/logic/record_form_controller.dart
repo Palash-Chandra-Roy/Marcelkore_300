@@ -1,3 +1,4 @@
+import 'package:my_app/core/utils/fetch_function.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// CREATE
@@ -6,6 +7,7 @@ Future<void> createRecord({
   required String details,
   String? status,
   required String value,
+  required ref,
 }) async {
   try {
     final data = await Supabase.instance.client
@@ -21,6 +23,7 @@ Future<void> createRecord({
         .single();
 
     print("✅ Record created: $data");
+    ref.invalidate(recordsStreamProvider);
   } catch (e) {
     print("❌ Create error: $e");
   }
@@ -33,6 +36,7 @@ Future<void> updateRecord({
   String? details,
   String? status,
   String? value,
+   ref,
 }) async {
   try {
     final updates = {
@@ -51,6 +55,7 @@ Future<void> updateRecord({
         .single();
 
     print("✅ Record updated: $data");
+    ref.invalidate(recordsStreamProvider);
   } catch (e) {
     print("❌ Update error: $e");
   }

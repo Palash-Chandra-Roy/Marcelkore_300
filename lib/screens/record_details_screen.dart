@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_app/features/record/screen/record_form_screen.dart';
 import 'package:my_app/models/record_data.dart';
+import 'package:my_app/utils/record_form_args.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/utils/fetch_function.dart';
 
@@ -145,7 +146,13 @@ class RecordDetailsScreen extends ConsumerWidget {
               ),
             ),
             onPressed: () {
-             context.push(RecordFormScreen.routeName, extra:record.id) ;
+             context.push(RecordFormScreen.routeName, extra: RecordFormArgs(
+               id: record.id,
+               title: record.title,
+               details: record.details,
+               status: record.status,
+               value: record.value,
+             ));
             },
             child: const Text("Edit Record"),
           ),

@@ -6,15 +6,21 @@ import 'package:my_app/features/record/logic/record_form_controller.dart';
 import 'package:my_app/screens/main_app.dart';
 import 'package:my_app/widgets/global_snackbar.dart';
 
-final recordFormProvider = StateProvider<Map<String, dynamic>>((ref) {
-  return {
-    'status': 'active',
-  };
-});
+final recordFormProvider = StateProvider.family<Map<String, dynamic>, String?>(
+      (ref, statusParam) {
+    return {
+      'status': statusParam ?? 'active', // 👈 যদি status null হয়, তাহলে "active"
+    };
+  },
+);
 
 class RecordFormScreen extends ConsumerWidget {
-  const RecordFormScreen({super.key, this.isId});
+  const RecordFormScreen( {super.key, this.isId, this.title, this.value, this.details, this.status,});
   final String? isId;
+  final String? title;
+  final double? value;
+  final String? details;
+  final String? status;
 
   static const routeName = "/recordFormScreen";
 
@@ -28,9 +34,9 @@ class RecordFormScreen extends ConsumerWidget {
     };
 
     final formKey = GlobalKey<FormState>();
-    final titleController = TextEditingController();
-    final detailsController = TextEditingController();
-    final valueController = TextEditingController();
+    final titleController = TextEditingController(text:isEditing? title:null);
+    final detailsController = TextEditingController(text:isEditing? details:null);
+    final valueController = TextEditingController(text:isEditing? value.toString():null);
 
     return Scaffold(
       appBar: AppBar(
@@ -91,13 +97,13 @@ class RecordFormScreen extends ConsumerWidget {
                 Consumer(
                   builder: (context, ref, _) {
                     final selectedStatus =
-                    ref.watch(recordFormProvider)['status'] as String;
+                    ref.watch(recordFormProvider(isEditing? status:null))['status'] as String;
                     return DropdownButtonFormField<String>(
                       value: selectedStatus,
                       onChanged: (newValue) {
                         if (newValue != null) {
                           ref
-                              .read(recordFormProvider.notifier)
+                              .read(recordFormProvider(isEditing?status:null).notifier)
                               .state['status'] = newValue;
                         }
                       },
@@ -147,8 +153,8 @@ class RecordFormScreen extends ConsumerWidget {
                   child: ElevatedButton(
                     onPressed: () async {
                       if (formKey.currentState?.validate() ?? false) {
-                        final status =
-                        ref.read(recordFormProvider)['status'] as String;
+                        final statuss =
+                        ref.read(recordFormProvider(isEditing?status:null))['status'] as String;
 
                         try {
                           if (isEditing) {
@@ -157,19 +163,22 @@ class RecordFormScreen extends ConsumerWidget {
                               title: titleController.text,
                               details: detailsController.text,
                               value: valueController.text,
-                              status: status,
+                              status: statuss,
+                              ref: ref
                             );
                             GlobalSnackBar.show(
                               context,
                               title: "Updated",
                               message: "Record updated successfully",
                             );
+
                           } else {
                             await createRecord(
                               title: titleController.text,
                               details: detailsController.text,
                               value: valueController.text,
-                              status: status,
+                              status: statuss,
+                              ref: ref
                             );
                             GlobalSnackBar.show(
                               context,
